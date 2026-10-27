@@ -31,7 +31,6 @@ for this object.
   "ki_":    <number>,
   "kj_":    <number>,
   "x_":     <number>,
-  "x1_":    <number>,
   "y_":     <number>,
   "symbolicDimInfo_":  <map<string, SymbolicDimInfo>>,
   "maxSymbolicVolume_": <map<string, int>>,
@@ -60,7 +59,6 @@ These are always serialized (value `-1` when unset):
 | `ki_` | number | Kernel rows. `-1` = unset. |
 | `kj_` | number | Kernel cols. `-1` = unset. |
 | `x_` | number | Repeat dimension that does not add reuse (e.g. attention heads). `-1` = unset. |
-| `x1_` | number | Additional repeat dimension (e.g. attention heads). `-1` = unset. |
 | `y_` | number | Kernel reuse dimension (e.g. time step). `-1` = unset. |
 
 ### Advanced fields
