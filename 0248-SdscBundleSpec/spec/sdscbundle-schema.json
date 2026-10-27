@@ -137,7 +137,7 @@
       "properties": {
         "factor_": {
           "type": "integer",
-          "description": "Iteration extent of this fold dimension: legal indices are 0 .. factor_-1, and FoldManager::isLegal errors on any index >= factor_. 1 = no splitting. Minimum 1 is therefore correct -- factor_ 0 admits no index at all, so the dimension cannot be read. Known frontend bug: elem_arr_1 is emitted as a whole-stick count (size divided by elements-per-stick, rounding down), which underflows to 0 for a dimension smaller than one stick -- but factor_ is an index extent, so it must round up. The gather/scatter fixtures under dxp/test carry the bad value and fail validation until the frontend is corrected.",
+          "description": "Number of entries in this fold dimension. Legal indices are 0..factor_-1. When deriving it from a dimension's size, round up, so a dimension smaller than one slice still gets 1.",
           "minimum": 1
         },
         "label_": {
@@ -168,7 +168,8 @@
                 }
               },
               "WkSplit": {"type": "object"}
-            }
+            },
+            "additionalProperties": false
           }
         },
         "dim_prop_attr": {
@@ -303,7 +304,8 @@
                   "description": "Per-stick-dimension replication counts, parallel to stickDimOrder_. Set for pool and window operations. Defaults to all-ones when absent.",
                   "items": {"type": "integer", "minimum": 1}
                 }
-              }
+              },
+              "additionalProperties": false
             }
           }
         },
@@ -341,6 +343,33 @@
       },
       "additionalProperties": false
     },
+    "PrimaryDsInfo": {
+      "type": "object",
+      "description": "Layout information for one tensor role. layoutDimOrder_ lists dimensions outermost-first; stickDimOrder_ and stickSize_ are parallel arrays defining the innermost contiguous storage tile.",
+      "properties": {
+        "layoutDimOrder_": {
+          "type": "array",
+          "description": "Ordered list of dimension names describing how the tensor is laid out in memory, outermost first. Dimension names must match those declared in DataStructDims.",
+          "items": {"type": "string"}
+        },
+        "stickDimOrder_": {
+          "type": "array",
+          "description": "The innermost contiguous dimensions that form a stick — the atomic unit of storage transfer. Must be a suffix subset of layoutDimOrder_. Parallel to stickSize_.",
+          "items": {"type": "string"}
+        },
+        "stickSize_": {
+          "type": "array",
+          "description": "Size of each stick dimension in elements. Parallel to stickDimOrder_: stickSize_[i] is the element count for stickDimOrder_[i].",
+          "items": {"type": "integer", "minimum": 1}
+        },
+        "stickRepl_": {
+          "type": "array",
+          "description": "Per-stick-dimension replication counts, parallel to stickDimOrder_. Set for pool and window operations. Defaults to all-ones when absent.",
+          "items": {"type": "integer", "minimum": 1}
+        }
+      },
+      "additionalProperties": false
+    },
     "DataStructDims": {
       "type": "object",
       "description": "Data structure dimensions. All numeric dimension values are numbers, with -1 meaning unset. A dimension a given operation does not use is omitted rather than set to -1.",
@@ -372,8 +401,8 @@
         },
         "paddingSizes_": {
           "type": "object",
-          "description": "Per-dimension padding information for a windowed operation. Keyed by the padded output spatial dimension: 'i' or 'j'. Note the key carries no trailing underscore, unlike the dimension fields above.",
-          "propertyNames": {"enum": ["i", "j"]},
+          "description": "Per-dimension padding information for a windowed operation. Keyed by the padded dimension, any of the loader's dimension names: in, out, mb, i, j, ij, ki, kj, kij, x, x1, y. Note the key carries no trailing underscore, unlike the dimension fields above.",
+          "propertyNames": {"enum": ["in", "out", "mb", "i", "j", "ij", "ki", "kj", "kij", "x", "x1", "y"]},
           "additionalProperties": {"$ref": "#/$defs/DimPaddingSizes"}
         }
       }
@@ -557,7 +586,7 @@
         },
         "dsType_": {
           "type": "string",
-          "description": "Data structure type (from torch_spyre LAYOUT_INPUT_LABELS and LAYOUT_OUTPUT_LABELS)",
+          "description": "Data structure type.",
           "enum": ["INPUT", "OUTPUT", "KERNEL", "KERNEL_IDX"]
         },
         "scale_": {
@@ -610,7 +639,7 @@
             },
             "fidelity_": {
               "type": "string",
-              "description": "Computation fidelity, from the OpAttributes::Fidelity enum (string mapping in OpAttributes::fidelityToString).",
+              "description": "Computation fidelity.",
               "enum": ["regular", "fast"]
             }
           }
@@ -656,8 +685,9 @@
         },
         "stride_": {"type": "integer", "minimum": 1, "description": "Stride. Default 1."},
         "dilation_": {"type": "integer", "minimum": 1, "description": "Dilation. Default 1."},
-        "windowDim_": {"type": "string", "description": "The reduction dimension this window is distributed over: 'ki' for a padded 'i', 'kj' for a padded 'j'. No trailing underscore.", "enum": ["ki", "kj"]}
-      }
+        "windowDim_": {"type": "string", "description": "The dimension this window is distributed over (ki for a padded i, kj for a padded j in the current frontend). Any of the loader's dimension names: in, out, mb, i, j, ij, ki, kj, kij, x, x1, y. No trailing underscore.", "enum": ["in", "out", "mb", "i", "j", "ij", "ki", "kj", "kij", "x", "x1", "y"]}
+      },
+      "additionalProperties": false
     },
     "PrimaryDim": {
       "type": "string",
