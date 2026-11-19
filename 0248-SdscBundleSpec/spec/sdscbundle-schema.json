@@ -346,7 +346,7 @@
     },
     "DataStructDims": {
       "type": "object",
-      "description": "Data structure dimensions. All numeric dimension values are numbers, with -1 meaning unset. A dimension a given operation does not use is omitted rather than set to -1.",
+      "description": "Data structure dimensions. All numeric dimension values are numbers, with -1 meaning unset. A dimension a given operation does not use is omitted rather than set to -1. A dimension the DSC uses (an allocate node names it in layoutDimOrder_ or coordinates_) must be greater than 0 in N_ and in every dataStageParam_ stages ss_ and el_.",
       "additionalProperties": false,
       "properties": {
         "name_": {
