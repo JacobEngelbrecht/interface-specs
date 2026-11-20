@@ -46,8 +46,10 @@ No fields are required; include only the dimensions relevant to the operation. N
 
 ### Primary dimension fields
 
-A dimension an operation does not use is omitted rather than set to `-1`. `-1`
-marks a dimension that is present but unset (for example, a symbolic dimension):
+A dimension the DSC uses (an allocate node names it in `layoutDimOrder_` or
+`coordinates_`) must be greater than 0 in `N_` and in every `dataStageParam_`
+stage's `ss_` and `el_`. A dimension an operation does not use is omitted rather
+than set to `-1`, which marks a dimension that is present but unset:
 
 | Field | Type | Description |
 |---|---|---|
